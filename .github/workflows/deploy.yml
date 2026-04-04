@@ -1,0 +1,40 @@
+name: Generate and Deploy Wishes Pages
+
+on:
+    schedule:
+        - cron: "0 9 * * 1"
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.11"
+
+            - name: Install Python dependencies
+              run: pip install -r requirements.txt
+
+            - name: Generate HTML pages
+              env:
+                  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+              run: python generate.py
+
+            - name: Install Netlify CLI
+              run: npm install -g netlify-cli
+
+            - name: Deploy to Netlify
+              env:
+                  NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+                  NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+              run: |
+                  netlify deploy --prod --dir=. --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
