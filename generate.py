@@ -32,12 +32,33 @@ WISHES:
 15. [wish]
 """
 
-    print(f"Generating: {keyword}...")
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt
-    )
-    content = response.text
+    # Add a delay to stay within free tier limits (RPM)
+    import time
+    
+    max_retries = 3
+    retry_delay = 10 # seconds
+
+    for attempt in range(max_retries):
+        try:
+            print(f"Generating: {keyword} (Attempt {attempt + 1})...")
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt
+            )
+            content = response.text
+            break # Success!
+        except Exception as e:
+            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                print(f"  Rate limit hit. Waiting {retry_delay}s...")
+                time.sleep(retry_delay)
+                retry_delay *= 2 # Exponential backoff
+            else:
+                print(f"  Error: {e}")
+                content = "ERROR: Could not generate content."
+                break
+    
+    # Extra safety delay between successful requests
+    time.sleep(5)
 
     intro  = ""
     wishes = ""
