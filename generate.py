@@ -35,8 +35,9 @@ WISHES:
     # Add a delay to stay within free tier limits (RPM)
     import time
     
-    max_retries = 3
-    retry_delay = 10 # seconds
+    max_retries = 5
+    retry_delay = 20 # Start with a longer delay for consistency
+    content = "" # Initialize to avoid NameError if retries fail
 
     for attempt in range(max_retries):
         try:
@@ -57,7 +58,10 @@ WISHES:
                 content = "ERROR: Could not generate content."
                 break
     
-    # Extra safety delay between successful requests
+    if not content:
+        content = "ERROR: All retries failed due to rate limits."
+
+    # Extra safety delay between topics
     time.sleep(5)
 
     intro  = ""
