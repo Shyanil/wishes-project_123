@@ -11,6 +11,8 @@ on:
 jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
 
         steps:
             - name: Checkout code
@@ -21,7 +23,7 @@ jobs:
               with:
                   python-version: "3.11"
 
-            - name: Install Python dependencies
+            - name: Install dependencies
               run: pip install -r requirements.txt
 
             - name: Generate HTML pages
@@ -29,12 +31,10 @@ jobs:
                   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
               run: python generate.py
 
-            - name: Install Netlify CLI
-              run: npm install -g netlify-cli
-
-            - name: Deploy to Netlify
-              env:
-                  NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-                  NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+            - name: Push generated pages to GitHub
               run: |
-                  netlify deploy --prod --dir=. --auth=$NETLIFY_AUTH_TOKEN --site=$NETLIFY_SITE_ID
+                  git config user.name "github-actions"
+                  git config user.email "github-actions@github.com"
+                  git add pages/ index.html
+                  git commit -m "auto-generate pages" || echo "Nothing to commit"
+                  git push origin main
