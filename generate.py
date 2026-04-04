@@ -1,10 +1,9 @@
-import google.generativeai as genai
+from google import genai
 import pandas as pd
 import os
 
 API_KEY = os.environ.get("GEMINI_API_KEY")
-genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = genai.Client(api_key=API_KEY)
 
 df = pd.read_csv("topics.csv")
 os.makedirs("pages", exist_ok=True)
@@ -34,8 +33,11 @@ WISHES:
 """
 
     print(f"Generating: {keyword}...")
-    response = model.generate_content(prompt)
-    content  = response.text
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
+    content = response.text
 
     intro  = ""
     wishes = ""
