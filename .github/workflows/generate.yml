@@ -3,11 +3,11 @@ name: Generate Wish Pages
 on:
   push:
     paths:
-      - 'topics.csv'        # Only runs when CSV changes
-  workflow_dispatch:         # Also allow manual trigger
+      - 'topics.csv'
+  workflow_dispatch:
 
 permissions:
-  contents: write            # Needed to push generated files back
+  contents: write
 
 jobs:
   build:
@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}   # ← THIS WAS MISSING
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -34,6 +36,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p pages
           git add pages/ index.html
-          git diff --staged --quiet || git commit -m "Auto-generate pages from topics.csv"
+          git diff --staged --quiet || git commit -m "Auto-generate pages [skip ci]"
           git push
